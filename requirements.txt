@@ -1,4 +1,7 @@
 flask
 flask-cors
+gunicorn
+scikit-learn
 pandas
-scikit-learn==1.6.1
+numpy
+pickle5
