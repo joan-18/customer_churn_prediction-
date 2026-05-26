@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Customer Churn Prediction</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'DM Sans',Arial,sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh;padding:32px 16px}
+    .container{max-width:760px;margin:auto}
+ 
+    h1{font-size:24px;font-weight:600;color:#38bdf8;margin-bottom:4px}
+    .subtitle{font-size:13px;color:#64748b;margin-bottom:28px}
+ 
+    .card{background:#1e293b;border:1px solid #334155;border-radius:16px;overflow:hidden;margin-bottom:16px}
+    .card-header{padding:12px 20px;background:#162032;border-bottom:1px solid #334155;display:flex;align-items:center;gap:10px}
+    .card-header .num{width:22px;height:22px;border-radius:50%;background:#38bdf8;color:#0f172a;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
+    .card-header h2{font-size:12px;font-weight:500;color:#94a3b8;text-transform:uppercase;letter-spacing:.8px}
+ 
+    .fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+    .field{padding:14px 20px;border-bottom:1px solid #1e293b;border-right:1px solid #1e293b}
+    label.flabel{display:block;font-size:11px;font-weight:500;color:#64748b;text-transform:uppercase;letter-spacing:.6px;margin-bottom:7px}
+ 
+    select,input[type=number]{width:100%;padding:9px 12px;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#e2e8f0;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .15s}
+    select:focus,input[type=number]:focus{border-color:#38bdf8}
+    input[type=number]{-moz-appearance:textfield;appearance:textfield;}
+ 
+    .money{position:relative}
+    .money::before{content:'$';position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#64748b;font-size:14px;pointer-events:none}
+    .money input{padding-left:26px}
+ 
+    .radio-row{display:flex;border:1px solid #334155;border-radius:8px;overflow:hidden}
+    .radio-row input[type=radio]{display:none}
+    .radio-row label{flex:1;text-align:center;padding:9px 6px;font-size:13px;color:#94a3b8;cursor:pointer;transition:all .15s;font-weight:400;text-transform:none;letter-spacing:0;margin:0}
+    .radio-row input:checked+label{background:#38bdf8;color:#0f172a;font-weight:600}
+ 
+    .submit-area{padding:20px}
+    .btn{width:100%;padding:13px;border:none;border-radius:10px;background:#38bdf8;color:#0f172a;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s}
+    .btn:hover{background:#0ea5e9}
+    .btn:active{transform:scale(.99)}
+    .btn:disabled{background:#334155;color:#64748b;cursor:not-allowed;transform:none}
+ 
+    .spinner{width:16px;height:16px;border:2px solid rgba(0,0,0,.2);border-top-color:#0f172a;border-radius:50%;animation:spin .7s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+ 
+    .result{margin:0 20px 20px;border-radius:12px;overflow:hidden;display:none}
+    .result-inner{padding:18px 20px}
+    .result.churn .result-inner{background:#450a0a;border:1px solid #991b1b}
+    .result.safe  .result-inner{background:#052e16;border:1px solid #166534}
+ 
+    .verdict{font-size:20px;font-weight:700;display:flex;align-items:center;gap:10px;margin-bottom:10px}
+    .result.churn .verdict{color:#fca5a5}
+    .result.safe  .verdict{color:#86efac}
+ 
+    .verdict-icon{font-size:22px}
+    .prob-line{font-size:13px;margin-bottom:10px}
+    .result.churn .prob-line{color:#f87171}
+    .result.safe  .prob-line{color:#4ade80}
+ 
+    .bar-wrap{height:6px;background:rgba(255,255,255,.08);border-radius:3px;margin-bottom:14px;overflow:hidden}
+    .bar{height:100%;border-radius:3px;transition:width .6s ease}
+    .result.churn .bar{background:#ef4444}
+    .result.safe  .bar{background:#22c55e}
+ 
+    .accuracy-note{font-size:12px;color:#64748b;margin-top:10px;text-align:right}
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Customer Churn Predictor</h1>
+  <p class="subtitle">Fill in the customer details below to get a churn prediction.</p>
+ 
+
+  <div class="card">
+    <div class="card-header"><div class="num">1</div><h2>Customer profile</h2></div>
+    <div class="fields">
+      <div class="field">
+        <label class="flabel">Gender</label>
+        <div class="radio-row">
+          <input type="radio" name="gender" id="gm" value="Male" checked><label for="gm">Male</label>
+          <input type="radio" name="gender" id="gf" value="Female"><label for="gf">Female</label>
+        </div>
+      </div>
+      <div class="field">
+        <label class="flabel">Senior citizen</label>
+        <div class="radio-row">
+          <input type="radio" name="senior" id="sn" value="0" checked><label for="sn">No</label>
+          <input type="radio" name="senior" id="sy" value="1"><label for="sy">Yes</label>
+        </div>
+      </div>
+      <div class="field">
+        <label class="flabel">Partner</label>
+        <div class="radio-row">
+          <input type="radio" name="partner" id="pty" value="Yes" checked><label for="pty">Yes</label>
+          <input type="radio" name="partner" id="ptn" value="No"><label for="ptn">No</label>
+        </div>
+      </div>
+      <div class="field">
+        <label class="flabel">Dependents</label>
+        <div class="radio-row">
+          <input type="radio" name="dependents" id="dpy" value="Yes" checked><label for="dpy">Yes</label>
+          <input type="radio" name="dependents" id="dpn" value="No"><label for="dpn">No</label>
+        </div>
+      </div>
+      <div class="field">
+        <label class="flabel">Tenure (months)</label>
+        <input type="number" id="tenure" min="0" max="72" value="12" placeholder="e.g. 24">
+      </div>
+      <div class="field">
+        <label class="flabel">Monthly charges</label>
+        <div class="money"><input type="number" id="monthly" min="0" step="0.01" value="65.00" placeholder="e.g. 65.00"></div>
+      </div>
+    </div>
+  </div>
+ 
+  
+  <div class="card">
+    <div class="card-header"><div class="num">2</div><h2>Services</h2></div>
+    <div class="fields">
+      <div class="field">
+        <label class="flabel">Phone service</label>
+        <select id="phone"><option>Yes</option><option>No</option></select>
+      </div>
+      <div class="field">
+        <label class="flabel">Multiple lines</label>
+        <select id="lines"><option>No</option><option>Yes</option><option>No phone service</option></select>
+      </div>
+      <div class="field">
+        <label class="flabel">Internet service</label>
+        <select id="internet"><option>DSL</option><option>Fiber optic</option><option>No</option></select>
+      </div>
+      <div class="field">
+        <label class="flabel">Online security</label>
+        <select id="security"><option>No</option><option>Yes</option><option>No internet service</option></select>
+      </div>
+      <div class="field">
+        <label class="flabel">Online backup</label>
+        <select id="backup"><option>No</option><option>Yes</option><option>No internet service</option></select>
+      </div>
+      <div class="field">
+        <label class="flabel">Device protection</label>
+        <select id="protection"><option>No</option><option>Yes</option><option>No internet service</option></select>
+      </div>
+      <div class="field">
+        <label class="flabel">Tech support</label>
+        <select id="techsupport"><option>No</option><option>Yes</option><option>No internet service</option></select>
+      </div>
+      <div class="field">
+        <label class="flabel">Streaming TV</label>
+        <select id="stv"><option>No</option><option>Yes</option><option>No internet service</option></select>
+      </div>
+      <div class="field">
+        <label class="flabel">Streaming movies</label>
+        <select id="smovies"><option>No</option><option>Yes</option><option>No internet service</option></select>
+      </div>
+    </div>
+  </div>
+ 
+ 
+  <div class="card">
+    <div class="card-header"><div class="num">3</div><h2>Contract & billing</h2></div>
+    <div class="fields">
+      <div class="field">
+        <label class="flabel">Contract</label>
+        <select id="contract"><option>Month-to-month</option><option>One year</option><option>Two year</option></select>
+      </div>
+      <div class="field">
+        <label class="flabel">Paperless billing</label>
+        <div class="radio-row">
+          <input type="radio" name="paperless" id="pby" value="Yes" checked><label for="pby">Yes</label>
+          <input type="radio" name="paperless" id="pbn" value="No"><label for="pbn">No</label>
+        </div>
+      </div>
+      <div class="field">
+        <label class="flabel">Payment method</label>
+        <select id="payment">
+          <option>Electronic check</option>
+          <option>Mailed check</option>
+          <option>Bank transfer (automatic)</option>
+          <option>Credit card (automatic)</option>
+        </select>
+      </div>
+    </div>
+ 
+    <div class="submit-area">
+      <button class="btn" id="predictBtn" onclick="predict()">
+         Predict churn
+      </button>
+    </div>
+ 
+    <!-- Result shown here -->
+    <div class="result" id="resultBox">
+      <div class="result-inner">
+        <div class="verdict" id="verdictText"></div>
+        <div class="prob-line" id="probText"></div>
+        <div class="bar-wrap"><div class="bar" id="probBar" style="width:0%"></div></div>
+        <div class="accuracy-note" id="accNote"></div>
+      </div>
+    </div>
+  </div>
+</div>
+ 
+<script>
+  const BACKEND = "http://127.0.0.1:5000/predict"; // change if deployed elsewhere
+ 
+  function radio(name) {
+    return document.querySelector(`input[name="${name}"]:checked`).value;
+  }
+ 
+  async function predict() {
+    const btn = document.getElementById("predictBtn");
+    const box = document.getElementById("resultBox");
+ 
+    const tenure  = document.getElementById("tenure").value;
+    const monthly = document.getElementById("monthly").value;
+ 
+    if (!tenure || !monthly) {
+      alert("Please enter tenure and monthly charges.");
+      return;
+    }
+ 
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner"></div> Predicting...';
+    box.style.display = "none";
+ 
+    const payload = {
+      gender:           radio("gender"),
+      seniorCitizen:    radio("senior"),
+      partner:          radio("partner"),
+      dependents:       radio("dependents"),
+      tenure:           tenure,
+      phoneService:     document.getElementById("phone").value,
+      multipleLines:    document.getElementById("lines").value,
+      internetService:  document.getElementById("internet").value,
+      onlineSecurity:   document.getElementById("security").value,
+      onlineBackup:     document.getElementById("backup").value,
+      deviceProtection: document.getElementById("protection").value,
+      techSupport:      document.getElementById("techsupport").value,
+      streamingTV:      document.getElementById("stv").value,
+      streamingMovies:  document.getElementById("smovies").value,
+      contract:         document.getElementById("contract").value,
+      paperlessBilling: radio("paperless"),
+      paymentMethod:    document.getElementById("payment").value,
+      monthlyCharges:   monthly,
+    };
+ 
+    try {
+      const res  = await fetch(BACKEND, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+ 
+      const churn = data.churn;
+      const prob  = data.probability;   
+      const acc   = data.accuracy;      
+ 
+      box.className = "result " + (churn ? "churn" : "safe");
+      document.getElementById("verdictText").innerHTML =
+        churn
+          ? "Customer is likely to churn"
+          : "Customer is not likely to churn";
+      document.getElementById("probText").textContent =
+        `Churn probability: ${prob}%`;
+      document.getElementById("probBar").style.width = prob + "%";
+      document.getElementById("accNote").textContent =
+        `Model accuracy: ${acc}%`;
+      box.style.display = "block";
+ 
+    } catch (err) {
+      alert("Could not reach the prediction server. Make sure app.py is running.");
+      console.error(err);
+    }
+ 
+    btn.disabled = false;
+    btn.innerHTML = "Predict churn";
+  }
+</script>
+</body>
+</html>
+ 
