@@ -6,7 +6,7 @@ import pandas as pd
 app = Flask(__name__)
 CORS(app)
 
-# Load the two separate pickle files
+
 with open("models/preprocessor.pkl", "rb") as f:
     preprocessor = pickle.load(f)
 
